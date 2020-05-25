@@ -125,7 +125,10 @@
                         //   var photoidVal = button.data('photoid');
                         //   modal.find('.modal-title').text('photoid：' + photoidVal)
                         // })
-                    </script>  
+                    </script>
+                    <script>
+                        
+                    </script>
                          
                     {{-- @2 --}}
                 </tbody>

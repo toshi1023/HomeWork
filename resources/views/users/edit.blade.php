@@ -31,9 +31,21 @@
             <input type="password" id="password" name="password" class="form-control">
         </div>
         <div class="col-md-6">
-            <div class="preview"></div>
+            {{-- 画像削除時のメッセージ --}}
+            <div id="fade_msg" style="display: none; color: red">画像の消去を反映するには登録ボタンを押してください</div>
+
+            {{-- 画像のプレビュー表示欄 --}}
+            @if ($user->profile_image != null)
+                <div class="preview"><img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="350" height="250"></div>
+            @else
+                <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
+            @endif
             <label for="profile_image">プロフィール画像</label>
-            <input type="file" id="profile_image" name="profile_image" class="form-control-file" value="{{ old('profile_image') ?? $user->profile_image }}">
+            <ul style="display: flex">
+                <input type="file" id="profile_image" name="profile_image" class="form-control-file" value="{{ old('profile_image') ?? $user->profile_image }}">
+                <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">
+                <input type="hidden" id="img_delete" name="img_delete" value=0>
+            </ul>
 
             <label for="company_id">会社名</label>
             <select name="company_id" id="company_id" class="form-control">

@@ -23,9 +23,17 @@
             <input type="password" id="password" name="password" class="form-control">
         </div>
             <div class="col-md-6">
-                <div class="preview"></div>
+                {{-- 画像削除時のメッセージ --}}
+                <div id="fade_msg" style="display: none; color: red">画像を削除しました</div>
+
+                <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
+                <input type="file" id="profile_image" name="profile_image" class="form-control-file">
+                <div id="preview_field"></div>
+                <div id="drop_area">drag and drop<br>or<br>click here.</div>
+                <div id="icon_clear_button">X</div>
                 <label for="profile_image">プロフィール画像</label>
-                    <input type="file" id="profile_image" name="profile_image" class="form-control-file">
+                    <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">
+                    <input type="hidden" id="img_delete" name="img_delete" value=0>
 
                     <label for="company_id">会社名</label>
                     <select name="company_id" id="company_id" class="form-control">

@@ -59,8 +59,12 @@ class UserController extends Controller
                 ]
             ]);
 
-            // 画像名だけをDBに保存
-            $user->profile_image = $upload_name;
+            // 削除フラグがfalseの場合にアップロードした画像をDBに保存
+            if($request->img_delete == 1){
+                $user->profile_image = null;
+            } else {
+                $user->profile_image = $upload_name;
+            }
             // データの登録(画像以外)
             $user->last_name = $request->last_name;
             $user->first_name = $request->first_name;
@@ -87,21 +91,11 @@ class UserController extends Controller
 
             } else {
 
-                // データの登録(画像以外)
-                $user->last_name = $request->last_name;
-                $user->first_name = $request->first_name;
-                $user->email = $request->email;
-                $user->password = Hash::make($request->password);
-                $user->company_id = $request->company_id;
-                $user->memo = $request->memo;
-
-                // データを保存
-                $user->save();
-
                 return redirect()->to('/users')->with('message', 'イメージ画像の登録に失敗しました。');
             }
         } else {
-            // データの登録(画像以外)
+            // データの登録(画像はNoimage_image.pngでDBに登録)
+            $user->profile_image = null;
             $user->last_name = $request->last_name;
             $user->first_name = $request->first_name;
             $user->email = $request->email;
@@ -150,8 +144,9 @@ class UserController extends Controller
     {
         $user = User::find($user->id);
 
-        if($_FILES['profile_image']['name'] != null){
         
+        if($_FILES['profile_image']['name'] != null){
+       
             // ファイルの名前取得
             $upload_name = $_FILES['profile_image']['name'];
 
@@ -168,8 +163,12 @@ class UserController extends Controller
                 ]
             ]);
 
-            // 画像名だけをDBに保存
-            $user->profile_image = $upload_name;
+            // 削除フラグがfalseの場合にアップロードした画像をDBに保存
+            if($request->img_delete == 1){
+                $user->profile_image = null;
+            } else {
+                $user->profile_image = $upload_name;
+            }
             // データの登録(画像以外)
             $user->last_name = $request->last_name;
             $user->first_name = $request->first_name;
@@ -196,24 +195,13 @@ class UserController extends Controller
 
             } else {
 
-                // データの登録(画像以外)
-                $user->last_name = $request->last_name;
-                $user->first_name = $request->first_name;
-                $user->email = $request->email;
-                // 新しいパスワードの入力がない限り保存しない
-                if(($request->password) != null){
-                    $user->password = Hash::make($request->password);
-                }
-                $user->company_id = $request->company_id;
-                $user->memo = $request->memo;
-
-                // データを保存
-                $user->save();
-
                 return redirect()->to('/users')->with('message', 'イメージ画像の登録に失敗しました。');
             }
         } else {
-            // データの登録(画像以外)
+            // データの登録(削除フラグのついていない画像以外)
+            if($request->img_delete == 1){
+                $user->profile_image = null;
+            }
             $user->last_name = $request->last_name;
             $user->first_name = $request->first_name;
             $user->email = $request->email;
