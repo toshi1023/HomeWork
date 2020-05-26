@@ -127,13 +127,13 @@
     $(function(){
         $('.btn-delete').on('click', function(){
 
-            // 削除アクションへsubmitするURLを取得
+            // destroyアクションへsubmitするURLを取得
             var url = $(this).data('url');
             $('#delete_message_name').html($(this).data('name')+"さんのアカウントを削除しますか？");
             $('#delete_user_id').val($(this).data('id'));
             $('#modalForm').modal('show');
+            // destroyアクションのURLをモーダル側のフォームにセット
             $('#form1').attr('action',url);
-            $('.btn-commit').attr('action',url);
         })
     });
 </script>

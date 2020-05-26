@@ -74,7 +74,6 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/origin.js') }}"></script>
 <script>
     $(function(){
         // "登録する"ボタンが押されたら処理を開始

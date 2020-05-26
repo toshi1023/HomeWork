@@ -127,13 +127,48 @@
                         <h3>
                             @yield('h3')
                         </h3>
-                        @if (session('message'))
-                        <div class="message">
-                            <h4 style="font-weight: bold">{{ session('message') }}</h4>
-                        </div>
+                        {{-- バリデーションエラーのメッセージを表示 --}}
+                        @if ($errors->any())
+                            <div class="alert alert-danger">
+                                <ul>
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
                         @endif
                     </div>
-                    
+
+                    {{-- メッセージの表示用モーダル --}}
+                    @if (session('message'))
+                        <script>
+                            $(function(){
+                                $('#messageForm').modal('show');
+                            });
+                        </script>
+                    @endif
+
+                    <div class="modal fade" id="messageForm" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                                </div>
+                                
+                                <div class="modal-body">
+                        
+                                    <div class="form-group">
+                                        <p style="font-size: 20px; color: rgb(0, 140, 255)" id="message_name">{{ session('message') }}</p>
+                                    </div>
+                        
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">閉じる</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> 
+
                     <!-- /.main-bar -->
                 </header>
                 <!-- /.head -->
@@ -256,6 +291,9 @@
     
 <!-- Scripts -->
 <script src="{{ asset('js/app.js') }}"></script>
+
+{{-- 追加Scripts --}}
+<script src="{{ asset('js/origin.js') }}"></script>
 
 {{--＜＜＜ yield ＞＞＞--}}
 @yield('scripts')

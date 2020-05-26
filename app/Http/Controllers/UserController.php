@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+// バリデーションの拡張機能を追加
+use Illuminate\Validation\Rule;
+
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use App\User;
@@ -15,8 +18,8 @@ class UserController extends Controller
     public function index()
     {
 
-        // ユーザデータの取得
-        $users = User::with('company')->latest('updated_at')->get();
+        // ユーザデータの取得(削除フラグfalseに絞って取得)
+        $users = User::with('company')->where('del_flg', 0)->latest('updated_at')->get();
 
         return view('users.index', [
             'users' => $users,
@@ -31,7 +34,7 @@ class UserController extends Controller
         $companies = Company::all();
 
         return view('users.create', [
-            'companies' => $companies
+            'companies' => $companies,
         ]);
     }
 
@@ -42,6 +45,13 @@ class UserController extends Controller
 
         // 保存に使用するインスタンスを作成
         $user = new User();
+
+        // メールアドレスの一意チェック
+        $request->validate([
+            // usersテーブルのemailカラムについて、
+            // del_flgが0のレコードを対象に、一意チェックする.
+            'email' => [Rule::unique('users', 'email')->where('del_flg', 0)]
+        ]);
 
         // 画像がセットされていたら、画像保存用の処理へ
         if($_FILES['profile_image']['name'] != null){
@@ -144,6 +154,11 @@ class UserController extends Controller
     {
         $user = User::find($user->id);
 
+
+        // メールアドレスの一意チェック(自分以外のデータと比較するように設定)
+        $request->validate([
+            'email' => [Rule::unique('users', 'email')->ignore($user->id)->where('del_flg', 0)]
+        ]);
         
         if($_FILES['profile_image']['name'] != null){
        
@@ -215,7 +230,7 @@ class UserController extends Controller
             // データを保存
             $user->save();
 
-            return redirect()->route('users.index')->with('message', 'ユーザを作成しました');
+            return redirect()->route('users.index')->with('message', 'ユーザを編集しました');
         }
     }
 
@@ -223,8 +238,10 @@ class UserController extends Controller
     // データの削除アクション
     public function destroy(User $user)
     {
+        // 削除フラグをtrueに変更
         $user = User::find($user->id);
-        $user->delete();
+        $user->del_flg = 1;
+        $user->save();
         return redirect()->route('users.index')->with('message', 'ユーザを削除しました');
     }
 
