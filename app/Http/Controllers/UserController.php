@@ -223,8 +223,9 @@ class UserController extends Controller
     // データの削除アクション
     public function destroy(User $user)
     {
+        $user = User::find($user->id);
         $user->delete();
-        return redirect('users')->with('message', 'ユーザを削除しました');
+        return redirect()->route('users.index')->with('message', 'ユーザを削除しました');
     }
 
         
