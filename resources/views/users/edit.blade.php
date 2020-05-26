@@ -34,19 +34,20 @@
             {{-- 画像削除時のメッセージ --}}
             <div id="fade_msg" style="display: none; color: red">画像の消去を反映するには登録ボタンを押してください</div>
 
-            {{-- 画像のプレビュー表示欄 --}}
-            @if ($user->profile_image != null)
-                <div class="preview"><img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="350" height="250"></div>
-            @else
-                <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
-            @endif
             <label for="profile_image">プロフィール画像</label>
-            <ul style="display: flex">
+            {{-- 画像のプレビュー表示欄 --}}
+            <div class="user-icon-dnd-wrapper">
                 <input type="file" id="profile_image" name="profile_image" class="form-control-file" value="{{ old('profile_image') ?? $user->profile_image }}">
-                <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">
-                <input type="hidden" id="img_delete" name="img_delete" value=0>
-            </ul>
-
+                @if ($user->profile_image != null)
+                    <div class="preview"><img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="350" height="250"></div>
+                @else
+                    <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
+                @endif
+                <div id="drop_area"></div>
+            </div>
+            <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">
+            <input type="hidden" id="img_delete" name="img_delete" value=0>
+            <br>
             <label for="company_id">会社名</label>
             <select name="company_id" id="company_id" class="form-control">
                 <option value="">選択してください</option>
@@ -70,7 +71,11 @@
         </div>
     </form>
 </div>
-<script src="{{ asset('js/origin.js') }}">
+@endsection
+
+@section('scripts')
+<script src="{{ asset('js/origin.js') }}"></script>
+<script>
     $(function(){
         // "登録する"ボタンが押されたら処理を開始
         $('#btn_register').on('click', function(){

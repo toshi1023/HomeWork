@@ -1,18 +1,60 @@
-// @1 登録フォームの画像プレビューを動的に設定
-$(function(){
-    //画像ファイルプレビュー表示のイベント追加 fileを選択時に発火するイベントを登録
-    // 引数eは変更された対象を代入(例：click(function(e){}; の文ではクリックされた要素をeに格納する))
-    // on('change', '子要素')はjavascriptで変更された後のHTMLにも有効
-    $('form').on('change', 'input[type="file"]', function(e) {
-        // 変更された画像の情報を変数に代入
-        var file = e.target.files[0],
-            reader = new FileReader(),
-            // previewはhtml側でdivのクラスとして設定しており、プレビュー画像の表示位置を表す
-            $preview = $(".preview");
+// @1 ファイルドロップ
+$(function () {
+    // #1 クリックで画像を選択する場合
+    $('#drop_area').on('click', function () {
+      $('#profile_image').click();
+    });
+  
+    $('#profile_image').on('change', function () {
+      // 画像が複数選択されていた場合(files.length : ファイルの数)
+      if (this.files.length > 1) {
+        alert('アップロードできる画像は1つだけです');
+        $('#profile_image').val('');
+        return;
+      }
 
-            // @1 これがないと何故か動かなくなる
-            t = this;
-            // @1
+      handleFiles($('#profile_image')[0].files);
+    });
+    // #1 　※処理は@1のjQuery処理に移る
+
+    // ドラッグしている要素がドロップ領域に入ったとき・領域にある間
+    $('#drop_area').on('dragenter dragover', function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+        $('#drop_area').css('border', '1px solid #333');  // 枠を実線にする
+    });
+
+    // ドラッグしている要素がドロップ領域から外れたとき
+    $('#drop_area').on('dragleave', function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+        $('#drop_area').css('border', '1px dashed #aaa');  // 枠を点線に戻す
+    });
+
+    // #2ドラッグしている要素がドロップされたとき
+    $('#drop_area').on('drop', function (event) {
+        event.preventDefault();
+    
+        // jQueryの場合、イベントからdataTransferフィールドを受け取ることができないため、
+        // originalEventを使用している
+        $('#profile_image')[0].files = event.originalEvent.dataTransfer.files;
+    
+        // 画像が複数選択されていた場合
+        if ($('#profile_image')[0].files.length > 1) {
+        alert('アップロードできる画像は1つだけです');
+        $('#profile_image').val('');
+        return;
+        }
+
+        handleFiles($('#profile_image')[0].files);
+
+    });
+    // #2
+
+    // 選択された画像ファイルの操作
+    function handleFiles(files) {
+        var file = files[0];
+        var reader = new FileReader();
 
         // 画像ファイル以外の場合は何もしない
         // A.indexOf(B)はAにBの値を含むかを判別！含む場合は0以上の値を返し、含まない場合は-1を返す
@@ -20,37 +62,46 @@ $(function(){
             return false;
         }
 
-        // ファイル読み込みが完了した際のイベント登録
-        reader.onload = (function(file) {
+        reader.onload = (function (file) {  // 読み込みが完了したら
+            
+            // previeクラスのdivにimgタグを以下のプロパティ付きで実装
             return function(e) {
-                //既存のプレビューを削除
-                $preview.empty();
-                // .prevewの領域の中にロードした画像を表示するimageタグを追加
-                $preview.append($('<img>').attr({
-                    // ロードされた画像ファイルのData URIスキームは e.target.result に格納される
-                    // ※画像を文字列に置き換える技術で、imgタグのsrcに入れるもの
-                    src: e.target.result,
+                $('.preview').empty();
+                $('.preview').append($('<img>').attr({
+                    src: e.target.result, // readAsDataURLの読み込み結果がresult
                     width: "350px",
                     height: "250px",
                     class: "preview",
                     title: file.name
-                }));
-            };
-            // @2 これがないと何故か動かなくなる
+                }));  // previewに画像を表示
+            };   
         })(file);
-            // @2
 
-        // readAsDataURL メソッドは、指定された Blob ないし File オブジェクトを読み込むために使用する
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(file); // ファイル読み込みを非同期でバックグラウンドで開始
 
         // 削除フラグを解除
         $('#img_delete').val(0);
+    }
+
+
+    // drop_area以外でファイルがドロップされた場合、ファイルが開いてしまうのを防ぐ
+    $(document).on('dragenter', function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    });
+    $(document).on('dragover', function (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    });
+    $(document).on('drop', function (event) {
+        event.stopPropagation();
+        event.preventDefault();
     });
 });
 // @1
 
 
-// プレビュー画像削除時のメッセージ設定
+// @2 プレビュー画像削除時のメッセージ設定
 $(function(){
     $('#cancell').on('click', function(){
         $preview = $(".preview");
@@ -76,42 +127,6 @@ $(function(){
         // 削除フラグを設定
         $('#img_delete').val(1);
         
-    });
-});
-
-
-// @2 登録フォームの入力チェックを動的に設定
-$(function(){
-    // "登録する"ボタンが押されたら処理を開始
-    $('#btn_register').on('click', function(){
-
-        // エラーチェックを実行
-        $('.error-text').remove();
-        let check = true;
-
-        // 入力チェックする
-        if ($('#last_name').val() == "") {
-            $('#last_name').after('<p class="error-text" style="color: red">苗字は必須です</p>');
-            check = false;
-        }
-        if ($('#email').val() == "") {
-            $('#email').after('<p class="error-text" style="color: red">メールアドレスは必須です</p>');
-            check = false;
-        }
-        if ($('#password').val() == "") {
-            $('#password').after('<p class="error-text" style="color: red">パスワードは必須です</p>');
-            check = false;
-        }
-        if ($('#company_id').val() == "") {
-            $('#company_id').after('<p class="error-text" style="color: red">会社名は必須です</p>');
-            check = false;
-        }
-
-        // 入力チェックをくぐり、check定数がtrueの場合、submit処理が実行される
-        if (check) {
-            $('#register_form').submit();
-        }
-
     });
 });
 // @2

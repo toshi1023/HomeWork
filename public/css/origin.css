@@ -1,3 +1,43 @@
+/* ドラッグアンドドロップのデザイン */
+.user-icon-dnd-wrapper {
+	top: 5px;
+  position: relative;
+  width: 350px;
+  height: 280px;
+}
+
+.preview {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 350px;
+  height: 250px;
+}
+
+#drop_area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 350px;
+  height: 250px;
+  border: 1px dashed #aaa;
+  cursor: pointer;
+}
+
+#profile_image {
+  position: absolute;
+  top: 0;
+  /* left: 0; */
+  width: 350px;
+  height: 250px;
+  opacity: 0;
+}
+
+#profile_image:focus {
+  opacity: 1;
+}
+
+
 /* 
     z-indexとは、「手前、奥」の概念です。z-indexの値が高いほど、そのコンテンツは、 
     値が低い他のコンテンツよりも手前に表示される
