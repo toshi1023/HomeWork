@@ -139,7 +139,7 @@
                         @endif
                     </div>
 
-                    {{-- メッセージの表示用モーダル --}}
+                    {{-- メッセージがあればメッセージ用のモーダルを表示git --}}
                     @if (session('message'))
                         <script>
                             $(function(){
@@ -147,7 +147,7 @@
                             });
                         </script>
                     @endif
-
+                    {{-- メッセージの表示用モーダル --}}
                     <div class="modal fade" id="messageForm" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
                         <div class="modal-dialog">
                             <div class="modal-content">
