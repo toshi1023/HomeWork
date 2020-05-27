@@ -14,7 +14,7 @@
   height: 250px;
 }
 
-#drop_area {
+.drop_area {
   position: absolute;
   top: 0;
   left: 0;
@@ -22,6 +22,14 @@
   height: 250px;
   border: 1px dashed #aaa;
   cursor: pointer;
+}
+
+.dashed {
+  border: 1px dashed #aaa;
+}
+
+.solid {
+  border: 1px solid #aaa;
 }
 
 #profile_image {

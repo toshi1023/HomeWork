@@ -31,7 +31,7 @@
                 <div class="user-icon-dnd-wrapper">
                     <input type="file" id="profile_image" name="profile_image" class="form-control-file">
                     <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
-                    <div id="drop_area"></div>
+                    <div id="drop_area" class="drop_area"></div>
                 </div>
                 {{-- @1 --}}
                 <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">

@@ -15,20 +15,22 @@ $(function () {
 
       handleFiles($('#profile_image')[0].files);
     });
-    // #1 　※処理は@1のjQuery処理に移る
+    // #1
 
     // ドラッグしている要素がドロップ領域に入ったとき・領域にある間
     $('#drop_area').on('dragenter dragover', function (event) {
         event.stopPropagation();
         event.preventDefault();
-        $('#drop_area').css('border', '1px solid #333');  // 枠を実線にする
+        $('#drop_area').removeClass('dashed'); // 点線の枠を設定したクラスをリセット
+        $('#drop_area').addClass('solid');  // 枠を実線にする
     });
 
     // ドラッグしている要素がドロップ領域から外れたとき
     $('#drop_area').on('dragleave', function (event) {
         event.stopPropagation();
         event.preventDefault();
-        $('#drop_area').css('border', '1px dashed #aaa');  // 枠を点線に戻す
+        $('#drop_area').removeClass('solid'); // 実線の枠を設定したクラスをリセット
+        $('#drop_area').addClass('dashed');  // 枠を点線に戻す
     });
 
     // #2ドラッグしている要素がドロップされたとき
@@ -41,9 +43,9 @@ $(function () {
     
         // 画像が複数選択されていた場合
         if ($('#profile_image')[0].files.length > 1) {
-        alert('アップロードできる画像は1つだけです');
-        $('#profile_image').val('');
-        return;
+            alert('アップロードできる画像は1つだけです');
+            $('#profile_image').val('');
+            return;
         }
 
         handleFiles($('#profile_image')[0].files);
@@ -118,6 +120,8 @@ $(function(){
             class: "preview",
             title: "Noimage_image.png",
         }));
+
+        $('#drop_area').removeClass('solid'); // 枠を点線に戻す
 
         $('#fade_msg').fadeIn("slow", function () {
             //コールバックで3秒後にフェードアウト	

@@ -43,7 +43,7 @@
                 @else
                     <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
                 @endif
-                <div id="drop_area"></div>
+                <div id="drop_area" class="drop_area"></div>
             </div>
             <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">
             <input type="hidden" id="img_delete" name="img_delete" value=0>
