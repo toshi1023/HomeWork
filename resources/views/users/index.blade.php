@@ -12,7 +12,7 @@
 
     {{-- @1 csv用モーダル実装 --}}
     <div class="modal fade" id="csvForm" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
-        <form action="" method="post" enctype="multipart/form-data">
+        <form action="" method="post" id="csv_form" enctype="multipart/form-data">
             {{ csrf_field() }}
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -97,7 +97,7 @@
                     <tr><td>{{ $user->id }}</td>
                         <td>{{ $user->last_name }}</td>
                         <td>{{ $user->first_name }}</td>
-                        
+                        <td>{{ $user->company->name }}</td>
                         <td>{{ $user->email }}</td>
                         @if (($user->profile_image) != null)
                             <td><img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="200" height="120"></td>

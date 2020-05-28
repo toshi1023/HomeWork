@@ -9,7 +9,10 @@
     <div class="row ml-md-2">
         <div class="col-sm-offset-1 col-md-10">
             <p>csvへの出力が完了しました</p>
-            {{ var_dump($row) }}
+            <p>
+                {{ $row_count }}件のデータを登録しました
+            </p>
+            
         </div>
     </div>
 @endsection

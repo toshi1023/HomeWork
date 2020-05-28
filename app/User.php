@@ -18,6 +18,9 @@ class User extends Authenticatable
         'last_name', 'email', 'password', 'company_id',
     ];
 
+    //ブラックリスト方式(idは自動採番以外で入力できないように設定)
+    protected $guarded = ['id'];
+
     /**
      * The attributes that should be hidden for arrays.
      *

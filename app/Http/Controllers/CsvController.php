@@ -3,21 +3,12 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use App\User;
 use SplFileObject; // useしないと 自動的にnamespaceのパスが付与される
 
 class CsvController extends Controller
 {
-
-    // csvのインポートファイルを代入するために宣言
-    protected $users = null;
- 
-    // インスタンス化されたときにインポートしたcsvファイルをcsvコントローラのプロパティとして設定
-    public function __construct(User $users)
-    {
-        $this->users = $users;
-    }
-
     public function import(Request $request)
     {
         // ロケールを設定(日本語に設定)
@@ -30,18 +21,18 @@ class CsvController extends Controller
         // アップロードしたファイルの絶対パスを取得
         $file_path = $request->file('csv_import')->path($uploaded_file);
 
+
         // SplFileObjectを生成
-        $file = new \SplFileObject($file_path);
+        $file = new SplFileObject($file_path);
     
-        // SplFileObject::READ_CSV が最速らしい
-        $file->setFlags(
-            SplFileObject::READ_CSV |           // CSVとして行を読み込み
-            \SplFileObject::SKIP_EMPTY |　　　　 // 空行を読み飛ばす
-            \SplFileObject::DROP_NEW_LINE　　　　// 行末の改行を読み飛ばす
-        );
+        // SplFileObject::READ_CSV が最速らしい(CSVとして行を読み込む)
+        $file->setFlags(SplFileObject::READ_CSV);
     
         // インポート用のテーブルで1行目はヘッダのため、インポートを除外するために1を設定
         $row_count = 1;
+
+        // 登録用のインスタンスを作成
+        $user = new User();
         
         foreach ($file as $row)
         {
@@ -52,37 +43,41 @@ class CsvController extends Controller
             // 1行目はヘッダのため2行目から処理を回す
             if ($row_count > 1)
             {
+
                 // CSVの文字コードがSJISなのでUTF-8に変更
                 $email = mb_convert_encoding($row[0], 'UTF-8', 'SJIS');
                 $password = mb_convert_encoding($row[1], 'UTF-8', 'SJIS');
                 $first_name = mb_convert_encoding($row[2], 'UTF-8', 'SJIS');
                 $last_name = mb_convert_encoding($row[3], 'UTF-8', 'SJIS');
                 $company_id = mb_convert_encoding($row[4], 'UTF-8', 'SJIS');
-                // $profile_image = mb_convert_encoding($row[5], 'UTF-8', 'SJIS');
-                $status = mb_convert_encoding($row[5], 'UTF-8', 'SJIS');
-                $memo = mb_convert_encoding($row[6], 'UTF-8', 'SJIS');
-                $del_flg = mb_convert_encoding($row[7], 'UTF-8', 'SJIS');
+                $memo = mb_convert_encoding($row[5], 'UTF-8', 'SJIS');
+                $del_flg = mb_convert_encoding($row[6], 'UTF-8', 'SJIS');
+                
             
+                
+
                 // 1件ずつデータをインポート
-                User::insert(array(
-                    'email' => $email,
-                    'password' => $password,
-                    'first_name' => $first_name,
-                    'last_name' => $last_name,
-                    'company_id' => $company_id,
-                    // 'profile_image' => $profile_image,
-                    'status' => $status, 
-                    'memo' => $memo, 
-                    'del_flg' => $del_flg
-                ));
+                $user->email = $email;
+                $user->password = Hash::make($password);
+                $user->first_name = $first_name;
+                $user->last_name = $last_name;
+                $user->company_id = $company_id;
+                $user->memo = $memo;
+                $user->del_flg = $del_flg;
+                
             }
     
             $row_count++;
     
         }
 
+        $user->save();
+
+        // 登録件数を変数に代入
+        $row_count = $row_count - 2;
+
         return view('csv.import', [
-            'row' => $row,
+            'row_count' => $row_count,
         ]);
     }
 

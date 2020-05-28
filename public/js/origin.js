@@ -158,7 +158,7 @@ $(function(){
         $('#csvForm').modal('show');
 
         // importアクションのURLをモーダル側のフォームにセット
-        $('#form1').attr('action',import_url);
+        $('#csv_form').attr('action',import_url);
     })
     // #2
 });
