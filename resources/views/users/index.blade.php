@@ -1,15 +1,49 @@
 @extends('layouts.app')
 
 @section('h3')
-<i class="fas fa-users"></i>
+    <i class="fas fa-users"></i>
     &nbsp;ユーザ一覧
+        {{-- csvエクスポート・インポート処理 --}}
+        <button class="btn btn-danger btn-import pull-right" data-import_url="{{ route('csv.import') }}">csvをインポート</button>
+        
+        <form action="{{ route('csv.export') }}" method="get">
+            <button type="submit" class="btn btn-primary btn-export pull-right" onclick="return confirm('データを出力しますか？')">csvをエクスポート</button>
+        </form>
+
+    {{-- @1 csv用モーダル実装 --}}
+    <div class="modal fade" id="csvForm" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+        <form action="" method="post" enctype="multipart/form-data">
+            {{ csrf_field() }}
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title" id="ModalLabel" style="color: red">csvファイルのインポート</h4>
+                    </div>
+                    
+                        <div class="modal-body">
+                
+                            <div class="form-group">
+                                {{-- インポートファイルの選択 --}}
+                                <input type="file" id="csv_import" name="csv_import" class="form-control-file">
+                            </div>
+                
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">キャンセル</button>
+                        <button type="submit" class="btn btn-danger btn-commit" id="">インポート</button>
+                        </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    {{-- @1 --}}
 @endsection
 
 @section('content')
-<br>
 {{-- コンテンツ内に収めるためにもグリッドシステムで要調整 --}}
-<div class="row">
-    <div class="col-md-10">
+<div class="row ml-md-2">
+    <div class="col-sm-offset-1 col-md-10">
         {{-- 同section内に記述しないと反映されない --}}
         <script>
             jQuery(function($){
@@ -31,9 +65,8 @@
                 });
             });
         </script>
-        
         {{-- ユーザ一覧を表示(DataTablesを使用) --}}
-        <table id="homework-table" class="table table-bordered">
+        <table id="homework-table" class="table">
             <thead>
                 <tr>
                     <th>
@@ -64,7 +97,7 @@
                     <tr><td>{{ $user->id }}</td>
                         <td>{{ $user->last_name }}</td>
                         <td>{{ $user->first_name }}</td>
-                        <td>{{ $user->company->name }}</td>
+                        
                         <td>{{ $user->email }}</td>
                         @if (($user->profile_image) != null)
                             <td><img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="200" height="120"></td>
@@ -120,21 +153,4 @@
         </table>
     </div>
 </div>
-@endsection
-
-@section('scripts')
-<script>
-    $(function(){
-        $('.btn-delete').on('click', function(){
-
-            // destroyアクションへsubmitするURLを取得
-            var url = $(this).data('url');
-            $('#delete_message_name').html($(this).data('name')+"さんのアカウントを削除しますか？");
-            $('#delete_user_id').val($(this).data('id'));
-            $('#modalForm').modal('show');
-            // destroyアクションのURLをモーダル側のフォームにセット
-            $('#form1').attr('action',url);
-        })
-    });
-</script>
 @endsection

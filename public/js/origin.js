@@ -134,3 +134,31 @@ $(function(){
     });
 });
 // @2
+
+// @3 モーダルの設定
+$(function(){
+    // #1 ユーザ削除用のモーダルに関する設定
+    $('.btn-delete').on('click', function(){
+        // destroyアクションへsubmitするURLを取得
+        var url = $(this).data('url');
+        $('#delete_message_name').html($(this).data('name')+"さんのアカウントを削除しますか？");
+        $('#delete_user_id').val($(this).data('id'));
+        $('#modalForm').modal('show');
+        // destroyアクションのURLをモーダル側のフォームにセット
+        $('#form1').attr('action',url);
+    })
+    // #1
+
+
+    // #2 csvインポート用のモーダルに関する設定
+    $('.btn-import').on('click', function(){
+        // importアクションへsubmitするURLを取得
+        var import_url = $(this).data('import_url');
+
+        $('#csvForm').modal('show');
+
+        // importアクションのURLをモーダル側のフォームにセット
+        $('#form1').attr('action',import_url);
+    })
+    // #2
+});

@@ -54,7 +54,7 @@ class UserController extends Controller
         ]);
 
         // 画像がセットされていたら、画像保存用の処理へ
-        if($_FILES['profile_image']['name'] != null){
+        if(!empty($_FILES['profile_image']['name'])){
 
             // フォルダの名前取得
             $upload_name = $_FILES['profile_image']['name'];

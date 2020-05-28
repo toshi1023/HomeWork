@@ -74,6 +74,9 @@ return [
     | These options configure the behavior of failed queue job logging so you
     | can control which database and table are used to store the jobs that
     | have failed. You may change them to any database / table you wish.
+    | 和訳)これらのオプションは、失敗したキュージョブのログ記録の動作を構成するため、
+    | 失敗したジョブの格納に使用するデータベースとテーブルを制御できます。 
+    | それらを任意のデータベース/テーブルに変更できます。
     |
     */
 
