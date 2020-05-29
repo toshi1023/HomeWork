@@ -259,7 +259,7 @@
 
         {{-- ＜＜＜　yield　＞＞＞ --}}
         <div id="content">
-            <div class="outer">
+            <div class="outer mt-2">
                 <div class="inner bg-light lter">
                     @yield('content')
                 </div>

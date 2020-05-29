@@ -2,13 +2,15 @@
 
 @section('h3')
     <i class="fas fa-users"></i>
-    &nbsp;ユーザ一覧
-        {{-- csvエクスポート・インポート処理 --}}
-        <button class="btn btn-danger btn-import pull-right" data-import_url="{{ route('csv.import') }}">csvをインポート</button>
-        
-        <form action="{{ route('csv.export') }}" method="get">
-            <button type="submit" class="btn btn-primary btn-export pull-right" onclick="return confirm('データを出力しますか？')">csvをエクスポート</button>
-        </form>
+    ユーザ一覧
+        <div class="form-inline">
+            {{-- csvエクスポート・インポート処理 --}}
+            <button class="btn btn-danger btn-import pull-right" data-import_url="{{ route('csv.import') }}">csvをインポート</button>
+            
+            <form action="{{ route('csv.export') }}" method="get">
+                <button type="submit" class="btn btn-primary btn-export pull-right" onclick="return confirm('データを出力しますか？')">csvをエクスポート</button>
+            </form>
+        </div>
 
     {{-- @1 csv用モーダル実装 --}}
     <div class="modal fade" id="csvForm" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">

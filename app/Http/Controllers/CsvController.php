@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 use App\User;
+use App\Http\Requests\CsvImport;
 use SplFileObject; // useしないと 自動的にnamespaceのパスが付与される
+use Validator;
 
 class CsvController extends Controller
 {
@@ -21,7 +24,6 @@ class CsvController extends Controller
         // アップロードしたファイルの絶対パスを取得
         $file_path = $request->file('csv_import')->path($uploaded_file);
 
-
         // SplFileObjectを生成
         $file = new SplFileObject($file_path);
     
@@ -33,7 +35,13 @@ class CsvController extends Controller
 
         // 登録用のインスタンスを作成
         $user = new User();
-        
+
+        $data = [];
+
+        // DBに登録済みのメールアドレスを取得
+        $registerd_email = DB::table('users')->select('email')->where('del_flg', 0)->get();
+
+
         foreach ($file as $row)
         {
     
@@ -51,27 +59,65 @@ class CsvController extends Controller
                 $last_name = mb_convert_encoding($row[3], 'UTF-8', 'SJIS');
                 $company_id = mb_convert_encoding($row[4], 'UTF-8', 'SJIS');
                 $memo = mb_convert_encoding($row[5], 'UTF-8', 'SJIS');
-                $del_flg = mb_convert_encoding($row[6], 'UTF-8', 'SJIS');
+
+                $data = [
+                    'email' => $email,
+                    'password' => $password,
+                    'first_name' => $first_name,
+                    'last_name' => $last_name, 
+                    'company_id' => $company_id, 
+                    'memo' => $memo, 
+                ];
+
                 
-            
+                // バリデーションチェック
+                // ※bailルールにより最初のバリデーションに失敗したら、
+                // 残りのバリデーションルールの判定を停止する
+                $validator = Validator::make($data,[
+                    'email' => 'bail|required|string|email|max:255',
+                    'password' => 'required|string|max:255',
+                ]);
+                // バリデーションチェックに引っかかったときは
+                // エラーメッセージをセッションに保存
+                if ($validator->fails()) {
+                    
+                    return redirect('/users')
+                                ->withErrors($validator)
+                                ->withInput();
+                }
+
+                // パスワードをハッシュ化
+                $data['password'] = Hash::make($data['password']);
+
+                $update = null;
                 
 
-                // 1件ずつデータをインポート
-                $user->email = $email;
-                $user->password = Hash::make($password);
-                $user->first_name = $first_name;
-                $user->last_name = $last_name;
-                $user->company_id = $company_id;
-                $user->memo = $memo;
-                $user->del_flg = $del_flg;
+                // 既存のメールアドレスとの重複チェック
+                foreach ($registerd_email as $email_data)
+                {
+                    // $registerd_emailはデータを->get()つまりオブジェクト型で取得しているため、
+                    // $email_data->emailでとらないとstring型でとれない
+                    if($data['email'] == $email_data->email){
+                        $update = $data['email'];
+                        break;
+                    }
+
+                }
+                
+                // メールアドレスがDBに登録されていたらupdate
+                // されていなかったらinsertを実行
+                if(isset($update)){
+                    User::where('email', '=', $update)->update($data);
+                } else {
+                    // 1件ずつデータをインポート
+                    User::insert($data);
+                }
                 
             }
     
             $row_count++;
     
         }
-
-        $user->save();
 
         // 登録件数を変数に代入
         $row_count = $row_count - 2;
@@ -94,6 +140,7 @@ class CsvController extends Controller
             'Expires' => '0', //キャッシュの有効期限は0で設定（キャッシュは無し）
         ];
 
+        // エクスポートして結果をcallback変数に代入
         $callback = function() 
         {
             
@@ -105,6 +152,7 @@ class CsvController extends Controller
                 'first_name',
                 'last_name',
                 'company_id',
+                'memo',
                 'login_time',
                 'del_flg',
             ];
@@ -116,7 +164,7 @@ class CsvController extends Controller
             $users_table = \DB::table('users');  // データベースのテーブルを指定(名前空間の設定から、先頭に\を忘れないように気を付ける)
  
             $users_data = $users_table  //データベースからデータ取得
-                ->select(['email','password','first_name','last_name','company_id','login_time','del_flg'])->get();
+                ->select(['email','password','first_name','last_name','company_id','memo','login_time','del_flg'])->get();
         
             foreach ($users_data as $row) {  //データを1行ずつ回す
                 $csv = [
@@ -125,6 +173,7 @@ class CsvController extends Controller
                     $row->first_name,
                     $row->last_name,
                     $row->company_id,
+                    $row->memo,
                     $row->login_time,
                     $row->del_flg,
                 ];

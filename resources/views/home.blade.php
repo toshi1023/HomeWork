@@ -7,12 +7,9 @@
 
 @section('content')
     {{-- TOPページのメインコンテンツデザイン --}}
-    <div id="content">
-        <div class="outer">
-            <div class="inner bg-light lter">
-                <div class="col-lg-12">
-                    <h1>Welcome to HomeWork !</h1>
-                    <p>このページではユーザの登録と削除を実行することが出来ます</p>
+    <div class="col-lg-12">
+        <h1>Welcome to HomeWork !</h1>
+        <p>このページではユーザの登録と削除を実行することが出来ます</p>
 {{-- コードの記載位置によって実際の文章の表示位置が変わる --}}
 <pre>
     <code class="lang-shell">
@@ -24,7 +21,7 @@
 $ 登録後は[ユーザ一覧]にて確認しよう
     </code>
 </pre>
-                </div>
+    </div>
                 <!-- /.col-lg-12 -->
             </div>
             <!-- /.inner -->
