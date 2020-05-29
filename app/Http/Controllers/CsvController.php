@@ -36,91 +36,101 @@ class CsvController extends Controller
         // 登録用のインスタンスを作成
         $user = new User();
 
-        $data = [];
-
         // DBに登録済みのメールアドレスを取得
-        $registerd_email = DB::table('users')->select('email')->where('del_flg', 0)->get();
+        $registerd_email = DB::table('users')->select('email')->where('del_flg', 0)->get();       
 
+        try  {
+            \DB::beginTransaction();
 
-        foreach ($file as $row)
-        {
-    
-            // 最終行の処理(最終行が空っぽの場合の対策)
-            if ($row === [null]) continue; 
-            
-            // 1行目はヘッダのため2行目から処理を回す
-            if ($row_count > 1)
+            foreach ($file as $row)
             {
-
-                // CSVの文字コードがSJISなのでUTF-8に変更
-                $email = mb_convert_encoding($row[0], 'UTF-8', 'SJIS');
-                $password = mb_convert_encoding($row[1], 'UTF-8', 'SJIS');
-                $first_name = mb_convert_encoding($row[2], 'UTF-8', 'SJIS');
-                $last_name = mb_convert_encoding($row[3], 'UTF-8', 'SJIS');
-                $company_id = mb_convert_encoding($row[4], 'UTF-8', 'SJIS');
-                $memo = mb_convert_encoding($row[5], 'UTF-8', 'SJIS');
-
-                $data = [
-                    'email' => $email,
-                    'password' => $password,
-                    'first_name' => $first_name,
-                    'last_name' => $last_name, 
-                    'company_id' => $company_id, 
-                    'memo' => $memo, 
-                ];
-
-                // バリデーションで使用するカスタムメッセージを設定
-                $messages = [
-                    'required' => $row_count.'行目の :attributeは入力が必須です',
-                    'email' => $row_count.'行目の :attributeはメール形式で入力してください',
-                ];
-                // バリデーションチェック
-                // ※bailルールにより最初のバリデーションに失敗したら、
-                // 残りのバリデーションルールの判定を停止する
-                $validator = Validator::make($data,[
-                    'email' => 'bail|required|string|email|max:255',
-                    'password' => 'required|string|max:255',
-                ], $messages);
-                // バリデーションチェックに引っかかったときは
-                // エラーメッセージをセッションに保存
-                if ($validator->fails()) {
-                    
-                    return redirect('/users')
-                                ->withErrors($validator)
-                                ->withInput();
-                }
-
-                // パスワードをハッシュ化
-                $data['password'] = Hash::make($data['password']);
-
-
-                $update = null;
         
-                // 既存のメールアドレスとの重複チェック
-                foreach ($registerd_email as $email_data)
+                // 最終行の処理(最終行が空っぽの場合の対策)
+                if ($row === [null]) continue; 
+                
+                // 1行目はヘッダのため2行目から処理を回す
+                if ($row_count > 1)
                 {
-                    // $registerd_emailはデータを->get()つまりオブジェクト型で取得しているため、
-                    // $email_data->emailでとらないとstring型でとれない
-                    if($data['email'] == $email_data->email){
-                        $update = $data['email'];
-                        break;
+
+                    // CSVの文字コードがSJISなのでUTF-8に変更
+                    $email = mb_convert_encoding($row[0], 'UTF-8', 'SJIS');
+                    $password = mb_convert_encoding($row[1], 'UTF-8', 'SJIS');
+                    $first_name = mb_convert_encoding($row[2], 'UTF-8', 'SJIS');
+                    $last_name = mb_convert_encoding($row[3], 'UTF-8', 'SJIS');
+                    $company_id = mb_convert_encoding($row[4], 'UTF-8', 'SJIS');
+                    $memo = mb_convert_encoding($row[5], 'UTF-8', 'SJIS');
+
+                    $data = [
+                        'email' => $email,
+                        'password' => $password,
+                        'first_name' => $first_name,
+                        'last_name' => $last_name, 
+                        'company_id' => $company_id, 
+                        'memo' => $memo, 
+                    ];
+
+                    // バリデーションで使用するカスタムメッセージを設定
+                    $messages = [
+                        'required' => $row_count.'行目の :attributeは入力が必須です',
+                        'email' => $row_count.'行目の :attributeはメール形式で入力してください',
+                    ];
+                    // バリデーションチェック
+                    // ※bailルールにより最初のバリデーションに失敗したら、
+                    // 残りのバリデーションルールの判定を停止する
+                    $validator = Validator::make($data,[
+                        'email' => 'bail|required|string|email|max:255',
+                        'password' => 'required|string|max:255',
+                    ], $messages);
+                    // バリデーションチェックに引っかかったときは
+                    // エラーメッセージをセッションに保存
+                    if ($validator->fails()) {
+                        
+                        return redirect('/users')
+                                    ->withErrors($validator)
+                                    ->withInput();
+                        // バリデーションエラーが発生すれば登録したデータをすべてロールバック
+                        throw new \Exception;
                     }
 
+                    // パスワードをハッシュ化
+                    $data['password'] = Hash::make($data['password']);
+
+
+                    $update = null;
+            
+                    // 既存のメールアドレスとの重複チェック
+                    foreach ($registerd_email as $email_data)
+                    {
+                        // $registerd_emailはデータを->get()つまりオブジェクト型で取得しているため、
+                        // $email_data->emailでとらないとstring型でとれない
+                        if($data['email'] == $email_data->email){
+                            $update = $data['email'];
+                            break;
+                        }
+
+                    }
+                    
+                    // メールアドレスがDBに登録されていたらupdate
+                    // されていなかったらinsertを実行
+                    if(isset($update)){
+                        User::where('email', '=', $update)->update($data);
+                    } else {
+                        // 1件ずつデータをインポート
+                        User::insert($data);
+                    }
+                    
                 }
-                
-                // メールアドレスがDBに登録されていたらupdate
-                // されていなかったらinsertを実行
-                if(isset($update)){
-                    User::where('email', '=', $update)->update($data);
-                } else {
-                    // 1件ずつデータをインポート
-                    User::insert($data);
-                }
-                
+        
+                $row_count++;
+        
             }
-    
-            $row_count++;
-    
+
+            // 処理が正常に完了した場合はコミット
+            \DB::commit();
+
+        } catch (\Exception $e) {
+
+            \DB::rollback();
         }
 
         // 登録件数を変数に代入
