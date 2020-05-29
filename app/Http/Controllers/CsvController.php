@@ -69,14 +69,18 @@ class CsvController extends Controller
                     'memo' => $memo, 
                 ];
 
-                
+                // バリデーションで使用するカスタムメッセージを設定
+                $messages = [
+                    'required' => $row_count.'行目の :attributeは入力が必須です',
+                    'email' => $row_count.'行目の :attributeはメール形式で入力してください',
+                ];
                 // バリデーションチェック
                 // ※bailルールにより最初のバリデーションに失敗したら、
                 // 残りのバリデーションルールの判定を停止する
                 $validator = Validator::make($data,[
                     'email' => 'bail|required|string|email|max:255',
                     'password' => 'required|string|max:255',
-                ]);
+                ], $messages);
                 // バリデーションチェックに引っかかったときは
                 // エラーメッセージをセッションに保存
                 if ($validator->fails()) {
@@ -89,9 +93,9 @@ class CsvController extends Controller
                 // パスワードをハッシュ化
                 $data['password'] = Hash::make($data['password']);
 
-                $update = null;
-                
 
+                $update = null;
+        
                 // 既存のメールアドレスとの重複チェック
                 foreach ($registerd_email as $email_data)
                 {
