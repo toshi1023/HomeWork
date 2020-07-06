@@ -99,7 +99,7 @@
                     <tr><td>{{ $user->id }}</td>
                         <td>{{ $user->last_name }}</td>
                         <td>{{ $user->first_name }}</td>
-                        <td>{{ $user->company->name }}</td>
+                        <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         @if (($user->profile_image) != null)
                             <td><img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="200" height="120"></td>

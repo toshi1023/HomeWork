@@ -8,18 +8,27 @@ use Illuminate\Validation\Rule;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use App\User;
-use App\Company;
-
+use App\Models\User;
+use App\Models\Company;
+use App\Services\CompanyInterface;
+use App\Services\UserInterface;
 
 class UserController extends Controller
 {
+    protected $companies;
+    protected $users;
+
+    public function __construct()
+    {
+        $this->companies = app()->make(CompanyInterface::class);
+        $this->users = app()->make(UserInterface::class);
+    }
+
     // ユーザ一覧アクション
     public function index()
     {
-
         // ユーザデータの取得(削除フラグfalseに絞って取得)
-        $users = User::with('company')->where('del_flg', 0)->latest('updated_at')->get();
+        $users = $this->users->allQuery($index=true)->get();
 
         return view('users.index', [
             'users' => $users,
@@ -30,8 +39,8 @@ class UserController extends Controller
     // 作成アクション
     public function create()
     {
-
-        $companies = Company::all();
+        // 会社データをすべて取得(削除フラグfalseに絞って取得)
+        $companies = $this->companies->allQuery()->get();
 
         return view('users.create', [
             'companies' => $companies,
@@ -43,13 +52,9 @@ class UserController extends Controller
     public function store(Request $request)
     {
 
-        // 保存に使用するインスタンスを作成
-        $user = new User();
-
         // メールアドレスの一意チェック
         $request->validate([
-            // usersテーブルのemailカラムについて、
-            // del_flgが0のレコードを対象に、一意チェックする.
+            // usersテーブルのemailカラムについて、del_flgが0のレコードを対象に、一意チェックする
             'email' => [Rule::unique('users', 'email')->where('del_flg', 0)]
         ]);
 
@@ -57,7 +62,7 @@ class UserController extends Controller
         if(!empty($_FILES['profile_image']['name'])){
 
             // フォルダの名前取得
-            $upload_name = $_FILES['profile_image']['name'];
+            $filename = $_FILES['profile_image']['name'];
 
             // アップロードしたファイルのバリデーション設定
             $this->validate($request, [
@@ -69,55 +74,18 @@ class UserController extends Controller
                 ]
             ]);
 
-            // 削除フラグがfalseの場合にアップロードした画像をDBに保存
-            if($request->img_delete == 1){
-                $user->profile_image = null;
-            } else {
-                $user->profile_image = $upload_name;
-            }
-            // データの登録(画像以外)
-            $user->last_name = $request->last_name;
-            $user->first_name = $request->first_name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->company_id = $request->company_id;
-            $user->memo = $request->memo;
-
-            // データを保存
-            $user->save();
-
-            // 画像の保存先フォルダ名を変数にセット(登録されたユーザIDをフォルダ名に設定)
-            $folder_path = $user->id;
-
-            // アップロードするディレクトリ名を指定
-            $up_dir = 'images/' . $folder_path;
-
-            // アップロードに成功しているか確認
-            if ($request->file('profile_image')->isValid([])) {
-                
-                $filename = $request->file('profile_image')->storeAs($up_dir, $upload_name, 'public');
-
+            if ($this->users->save($request, $filename)) {
                 return redirect()->to('/users')->with('message', 'プロフィール画像付きのユーザを作成しました。');
-
-            } else {
-
-                return redirect()->to('/users')->with('message', 'イメージ画像の登録に失敗しました。');
             }
-        } else {
-            // データの登録(画像はNoimage_image.pngでDBに登録)
-            $user->profile_image = null;
-            $user->last_name = $request->last_name;
-            $user->first_name = $request->first_name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->company_id = $request->company_id;
-            $user->memo = $request->memo;
 
-            // データを保存
-            $user->save();
-
+            return redirect()->to('/users/create')->with('errors', 'ユーザの作成に失敗しました');
+        }
+        
+        // 画像がセットされていない場合の処理
+        if ($this->users->save($request)) {
             return redirect()->route('users.index')->with('message', 'ユーザを作成しました');
         }
+        return redirect()->to('/users/create')->with('errors', 'ユーザの作成に失敗しました');
     }
 
 

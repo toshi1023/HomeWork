@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use App\User;
+use App\Models\User;
 use App\Http\Requests\CsvImport;
 use SplFileObject; // useしないと 自動的にnamespaceのパスが付与される
 use Validator;
