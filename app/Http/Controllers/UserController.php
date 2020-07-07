@@ -28,6 +28,7 @@ class UserController extends Controller
         // UserServiceをインスタンス化
         $this->users = app()->make(UserInterface::class);
         
+        // セッションに保存するメッセージ用メソッドをインスタンス化
         $this->messages = $messages;
     }
 
@@ -68,7 +69,7 @@ class UserController extends Controller
         // 画像がセットされていたら、画像保存用の処理へ
         if(!empty($_FILES['profile_image']['name'])){
 
-            // フォルダの名前取得
+            // ファイル名前取得
             $filename = $_FILES['profile_image']['name'];
 
             // アップロードしたファイルのバリデーション設定
@@ -81,22 +82,23 @@ class UserController extends Controller
                 ]
             ]);
 
-            // データの保存がうまく行ったとき
+            // (画像あり)データの保存がうまく行ったとき
             if ($this->users->save($request, $filename)) {
-                return redirect()->to('/users')->with('message', 'プロフィール画像付きのユーザを作成しました。');
+                return redirect()->to('/users')->with('message', '(画像付き)ユーザを作成しました。');
             }
 
-            // データの保存がうまく行かなかったとき
-            $this->messages->add('', '画像の保存に失敗しました。再度登録してください。');
+            // (画像あり)データの保存に失敗したとき
+            $this->messages->add('', '画像の保存に失敗しました。管理者に問い合わせてください。');
             return redirect()->to('/users/create')->withErrors($this->messages);
         }
         
-        // 画像がセットされていない場合の処理
+        // (画像なし)データの保存がうまく行ったとき
         if ($this->users->save($request)) {
             return redirect()->route('users.index')->with('message', 'ユーザを作成しました');
         }
 
-        $this->messages->add('', 'ユーザの作成に失敗しました');
+        // (画像なし)データの保存に失敗したとき
+        $this->messages->add('', 'ユーザの作成に失敗しました。管理者に問い合わせてください。');
         return redirect()->to('/users/create')->withErrors($this->messages);
     }
 
@@ -119,7 +121,7 @@ class UserController extends Controller
     {
 
         // 選択されたユーザの情報と会社情報を取得
-        $user = $this->users->showQuery()->first();
+        $user = $this->users->editQuery($user)->first();
         $companies = $this->companies->allQuery()->get();
 
         return view('users.edit', [
@@ -129,24 +131,21 @@ class UserController extends Controller
     }
 
 
-    // 編集データの更新アクション
+    /* 編集データの更新アクション */
     public function update(Request $request, User $user)
     {
-        $user = User::find($user->id);
-
+        // 編集対象のユーザのデータを取得
+        $user = $this->users->editQuery($user)->first();
 
         // メールアドレスの一意チェック(自分以外のデータと比較するように設定)
         $request->validate([
             'email' => [Rule::unique('users', 'email')->ignore($user->id)->where('del_flg', 0)]
         ]);
         
-        if($_FILES['profile_image']['name'] != null){
+        if(!empty($_FILES['profile_image']['name'])){
        
-            // ファイルの名前取得
-            $upload_name = $_FILES['profile_image']['name'];
-
-            // フォルダ名の取得
-            $folder_path = $user->id;
+            // ファイル名取得
+            $filename = $_FILES['profile_image']['name'];
 
             // アップロードしたファイルのバリデーション設定
             $this->validate($request, [
@@ -158,60 +157,24 @@ class UserController extends Controller
                 ]
             ]);
 
-            // 削除フラグがfalseの場合にアップロードした画像をDBに保存
-            if($request->img_delete == 1){
-                $user->profile_image = null;
-            } else {
-                $user->profile_image = $upload_name;
+            // (画像あり)データの更新がうまく行ったとき
+            if ($this->users->save($request, $filename, $update=true)) {
+                return redirect()->to('/users')->with('message', '(画像付き)ユーザを更新しました。');
             }
-            // データの登録(画像以外)
-            $user->last_name = $request->last_name;
-            $user->first_name = $request->first_name;
-            $user->email = $request->email;
-            // 新しいパスワードの入力がない限り保存しない
-            if(($request->password) != null){
-                $user->password = Hash::make($request->password);
-            }
-            $user->company_id = $request->company_id;
-            $user->memo = $request->memo;
-
-            // データを保存
-            $user->save();
-
-            // アップロードするディレクトリ名を指定
-            $up_dir = 'images/' . $folder_path;
-
-            // アップロードに成功しているか確認
-            if ($request->file('profile_image')->isValid([])) {
-                
-                $request->file('profile_image')->storeAs($up_dir, $upload_name, 'public');
-                
-                return redirect()->to('/users')->with('message', 'プロフィール画像含めてユーザを編集しました。');
-
-            } else {
-
-                return redirect()->to('/users')->with('message', 'イメージ画像の登録に失敗しました。');
-            }
-        } else {
-            // データの登録(削除フラグのついていない画像以外)
-            if($request->img_delete == 1){
-                $user->profile_image = null;
-            }
-            $user->last_name = $request->last_name;
-            $user->first_name = $request->first_name;
-            $user->email = $request->email;
-            // 新しいパスワードの入力がない限り保存しない
-            if(($request->password) != null){
-                $user->password = Hash::make($request->password);
-            }
-            $user->company_id = $request->company_id;
-            $user->memo = $request->memo;
-
-            // データを保存
-            $user->save();
-
-            return redirect()->route('users.index')->with('message', 'ユーザを編集しました');
+            
+            // (画像あり)データの更新に失敗したとき
+            $this->messages->add('', '画像の保存に失敗しました。管理者に問い合わせてください。');
+            return redirect()->to('/users\/'.$request->id.'/edit')->withErrors($this->messages);
         }
+
+        // (画像なし)データの更新がうまく行ったとき
+        if ($this->users->save($request, [], $update=true)) {
+            return redirect()->to('/users')->with('message', 'ユーザを更新しました。');
+        }
+        
+        // (画像なし)データの更新に失敗したとき
+        $this->messages->add('', 'ユーザの更新に失敗しました。管理者に問い合わせてください。');
+        return redirect()->to('/users\/'.$request->id.'/edit')->withErrors($this->messages);
     }
 
 
@@ -219,10 +182,13 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         // 削除フラグをtrueに変更
-        $user = User::find($user->id);
-        $user->del_flg = 1;
-        $user->save();
-        return redirect()->route('users.index')->with('message', 'ユーザを削除しました');
+        if ($this->user->destroy($user)) {
+            return redirect()->route('users.index')->with('message', 'ユーザを削除しました');
+        }
+
+        $this->messages->add('', 'ユーザの削除に失敗しました。管理者に問い合わせてください。');
+        return redirect()->to('/users\/'.$request->id.'/edit')->withErrors($this->messages);
+        
     }
 
         

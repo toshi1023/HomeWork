@@ -23,18 +23,16 @@ class UserService implements UserInterface
 
     /* 
      * ユーザを全件取得(論理削除は含まない)
-     * 引数: users/indexページの表示用データを取得するフラグ
+     * 
      **/
-    public function indexQuery($index=false)
+    public function indexQuery()
     {
-        // indexフラグがtrueの時は会社名も結合で取得
-        if ($index) {
-            $this->query
-                ->leftjoin('companies', 'companies.id', '=', 'users.company_id')
-                ->select('users.*', 'companies.name');
-        }
-
-        $this->query->where('users.del_flg', 0)->orderBy('users.updated_at', 'desc');
+        
+        $this->query
+             ->leftjoin('companies', 'companies.id', '=', 'users.company_id')
+             ->select('users.*', 'companies.name')
+             ->where('users.del_flg', 0)
+             ->orderBy('users.updated_at', 'desc');
 
         return $this->query;
     }
@@ -46,6 +44,14 @@ class UserService implements UserInterface
 
         return $this->query;
     }
+
+     /* 編集対象となるユーザの情報を取得 */
+     public function editQuery($request)
+     {
+         $this->query->where('id', $request->id);
+ 
+         return $this->query;
+     }
 
     /* ファイルアップロード処理 */
     public function fileUpload($request, $filename)
@@ -68,8 +74,9 @@ class UserService implements UserInterface
     /* ユーザのDB保存処理
      * 第1引数:入力フォームから送信されたデータ
      * 第2引数:ファイル名
+     * 第3引数:updateフラグ(trueの場合はデータ更新の専用処理を実行)
     */
-    public function save($request, $filename=null)
+    public function save($request, $filename=null, $update=false)
     {
         try{
             // ファイル名がnullの場合は画像の保存処理を実行しない
@@ -90,9 +97,18 @@ class UserService implements UserInterface
             $this->user->last_name  = $request->last_name;
             $this->user->first_name = $request->first_name;
             $this->user->email      = $request->email;
-            $this->user->password   = Hash::make($request->password);
             $this->user->company_id = $request->company_id;
             $this->user->memo       = $request->memo;
+
+            // updateフラグがtrueの場合は新しいパスワードの入力がない限り保存しない
+            if($update){
+                if(($request->password) != null) {
+                    $this->user->password   = Hash::make($request->password);
+                }
+                
+            } else {
+                $this->user->password   = Hash::make($request->password);
+            }
 
             // データを保存
             $this->user->save();
@@ -105,4 +121,25 @@ class UserService implements UserInterface
         }
     }    
 
+    /* 
+     * データの削除処理
+     * 引数：削除対象のユーザデータ
+     * */
+    public function destroy($request)
+    {
+        try{
+            // 対象データを取得
+            $user = $this->query->where('id', $request->id);
+
+            // 論理削除フラグをtrueに変更
+            $user->del_flg = 1;
+
+            $user->save();
+
+            return true;
+        } catch (\Exception $e) {
+            \Log::error('database delete error:'.$e->getMessage());
+            return false;
+        }
+    }
 }
