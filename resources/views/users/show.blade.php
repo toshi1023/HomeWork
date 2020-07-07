@@ -18,7 +18,7 @@
 
             <label for="profile_image">プロフィール画像</label>
             <br>
-            <img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="400" height="300">
+            <img src="{{ asset('storage/images/'. $user->email .'/'. $user->profile_image) }}" width="400" height="300">
             <br>
 
             <label for="last_name">苗字</label>

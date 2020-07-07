@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\MessageBag;
 use App\Models\User;
 use App\Models\Company;
 use App\Services\CompanyInterface;
@@ -17,18 +18,24 @@ class UserController extends Controller
 {
     protected $companies;
     protected $users;
+    protected $messages;
 
-    public function __construct()
+    public function __construct(MessageBag $messages)
     {
+        // CompanyServiceをインスタンス化
         $this->companies = app()->make(CompanyInterface::class);
+
+        // UserServiceをインスタンス化
         $this->users = app()->make(UserInterface::class);
+        
+        $this->messages = $messages;
     }
 
-    // ユーザ一覧アクション
+    /* ユーザ一覧アクション */
     public function index()
     {
         // ユーザデータの取得(削除フラグfalseに絞って取得)
-        $users = $this->users->allQuery($index=true)->get();
+        $users = $this->users->indexQuery($index=true)->get();
 
         return view('users.index', [
             'users' => $users,
@@ -36,7 +43,7 @@ class UserController extends Controller
     }
 
 
-    // 作成アクション
+    /* 作成アクション */
     public function create()
     {
         // 会社データをすべて取得(削除フラグfalseに絞って取得)
@@ -48,7 +55,7 @@ class UserController extends Controller
     }
 
 
-    // 作成データの登録アクション
+    /* 作成データの登録アクション */
     public function store(Request $request)
     {
 
@@ -74,18 +81,23 @@ class UserController extends Controller
                 ]
             ]);
 
+            // データの保存がうまく行ったとき
             if ($this->users->save($request, $filename)) {
                 return redirect()->to('/users')->with('message', 'プロフィール画像付きのユーザを作成しました。');
             }
 
-            return redirect()->to('/users/create')->with('errors', 'ユーザの作成に失敗しました');
+            // データの保存がうまく行かなかったとき
+            $this->messages->add('', '画像の保存に失敗しました。再度登録してください。');
+            return redirect()->to('/users/create')->withErrors($this->messages);
         }
         
         // 画像がセットされていない場合の処理
         if ($this->users->save($request)) {
             return redirect()->route('users.index')->with('message', 'ユーザを作成しました');
         }
-        return redirect()->to('/users/create')->with('errors', 'ユーザの作成に失敗しました');
+
+        $this->messages->add('', 'ユーザの作成に失敗しました');
+        return redirect()->to('/users/create')->withErrors($this->messages);
     }
 
 
@@ -93,10 +105,10 @@ class UserController extends Controller
     public function show(User $user)
     {
         
-        $company = Company::find($user->company_id);
-
+        $company = $this->companies->showQuery()->first();
+        
         return view('users.show', [
-            'user' => $user,
+            'user'    => $user,
             'company' => $company,
         ]);
     }
@@ -107,8 +119,8 @@ class UserController extends Controller
     {
 
         // 選択されたユーザの情報と会社情報を取得
-        $user = User::find($user->id);
-        $companies = Company::all();
+        $user = $this->users->showQuery()->first();
+        $companies = $this->companies->allQuery()->get();
 
         return view('users.edit', [
             'user' => $user,

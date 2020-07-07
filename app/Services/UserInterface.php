@@ -4,8 +4,8 @@ namespace App\Services;
 
 interface UserInterface
 {
-    public function allQuery($index);
+    public function indexQuery($index);
     public function showQuery();
-    public function fileUpload($request);
+    public function fileUpload($request, $filename);
     public function save($request, $filename);
 }

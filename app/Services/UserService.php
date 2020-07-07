@@ -25,7 +25,7 @@ class UserService implements UserInterface
      * ユーザを全件取得(論理削除は含まない)
      * 引数: users/indexページの表示用データを取得するフラグ
      **/
-    public function allQuery($index=false)
+    public function indexQuery($index=false)
     {
         // indexフラグがtrueの時は会社名も結合で取得
         if ($index) {
@@ -34,7 +34,7 @@ class UserService implements UserInterface
                 ->select('users.*', 'companies.name');
         }
 
-        $this->query->where('users.del_flg', 0)->latest('users.updated_at');
+        $this->query->where('users.del_flg', 0)->orderBy('users.updated_at', 'desc');
 
         return $this->query;
     }
@@ -48,17 +48,17 @@ class UserService implements UserInterface
     }
 
     /* ファイルアップロード処理 */
-    public function fileUpload($request)
+    public function fileUpload($request, $filename)
     {
-        if (!empty($_FILES['profile_image']['name'])) {
+        if ($request->file('profile_image')->isValid([])) {
             // 画像の保存先フォルダ名を変数にセット(登録されたユーザIDをフォルダ名に設定)
-            $folder_path = $this->user->id;
+            $folder_path = $request->email;
 
             // アップロードするディレクトリ名を指定
             $up_dir = 'images/' . $folder_path;
 
             // アップロード処理
-            $request->file('profile_image')->storeAs($up_dir, $upload_name, 'public');
+            $request->file('profile_image')->storeAs($up_dir, $filename, 'public');
         }
         
         return;
@@ -74,12 +74,16 @@ class UserService implements UserInterface
         try{
             // ファイル名がnullの場合は画像の保存処理を実行しない
             if (($filename) !== null) {
+                
                 // 削除フラグがfalseの場合にアップロードした画像をDBに保存
                 if($request->img_delete == 1){
                     $this->user->profile_image = null;
                 } else {
                     $this->user->profile_image = $filename;
                 }
+
+                // ファイルアップロード処理
+                $this->fileUpload($request, $filename);
             }
             
             // データの登録(画像以外)
@@ -92,9 +96,6 @@ class UserService implements UserInterface
 
             // データを保存
             $this->user->save();
-
-            // ファイルアップロード処理
-            $this->fileUpload($request);
 
             return true;
 

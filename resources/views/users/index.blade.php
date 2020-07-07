@@ -102,7 +102,7 @@
                         <td>{{ $user->name }}</td>
                         <td>{{ $user->email }}</td>
                         @if (($user->profile_image) != null)
-                            <td><img src="{{ asset('storage/images/'. $user->id .'/'. $user->profile_image) }}" width="200" height="120"></td>
+                            <td><img src="{{ asset('storage/images/'. $user->email .'/'. $user->profile_image) }}" width="200" height="120"></td>
                         @else
                             <td><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="200" height="120"></td>
                         @endif
