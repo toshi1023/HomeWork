@@ -106,7 +106,7 @@ class UserController extends Controller
     // マイページアクション
     public function show(User $user)
     {
-        
+        // ユーザの所属する会社データを取得
         $company = $this->companies->showQuery()->first();
         
         return view('users.show', [
@@ -158,7 +158,7 @@ class UserController extends Controller
             ]);
 
             // (画像あり)データの更新がうまく行ったとき
-            if ($this->users->save($request, $filename, $update=true)) {
+            if ($this->users->save($request, $filename, $user)) {
                 return redirect()->to('/users')->with('message', '(画像付き)ユーザを更新しました。');
             }
             
@@ -168,7 +168,7 @@ class UserController extends Controller
         }
 
         // (画像なし)データの更新がうまく行ったとき
-        if ($this->users->save($request, [], $update=true)) {
+        if ($this->users->save($request, null, $user)) {
             return redirect()->to('/users')->with('message', 'ユーザを更新しました。');
         }
         
@@ -181,13 +181,15 @@ class UserController extends Controller
     // データの削除アクション
     public function destroy(User $user)
     {
+        // dd($user);
+        // exit;
         // 削除フラグをtrueに変更
-        if ($this->user->destroy($user)) {
+        if ($this->users->destroy($user)) {
             return redirect()->route('users.index')->with('message', 'ユーザを削除しました');
         }
 
         $this->messages->add('', 'ユーザの削除に失敗しました。管理者に問い合わせてください。');
-        return redirect()->to('/users\/'.$request->id.'/edit')->withErrors($this->messages);
+        return redirect()->to('/users')->withErrors($this->messages);
         
     }
 

@@ -17,7 +17,7 @@ interface UserInterface
     public function fileUpload($request, $filename);
 
     // データ保存メソッド
-    public function save($request, $filename, $update=false);
+    public function save($request, $filename, $user_data);
 
     // データ削除メソッド
     public function destroy($request);

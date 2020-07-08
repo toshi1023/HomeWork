@@ -15,7 +15,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'last_name', 'email', 'password', 'company_id',
+        'last_name', 'first_name', 'email', 'password', 'company_id', 'profile_image', 'del_flg'
     ];
 
     //ブラックリスト方式(idは自動採番以外で入力できないように設定)
@@ -33,7 +33,7 @@ class User extends Authenticatable
     // companiesテーブルと1対多のリレーション構築(多側の設定)
     public function company()
     {
-        return $this->belongsTo('App\Company');
+        return $this->belongsTo('App\Models\Company');
     }
 
 }

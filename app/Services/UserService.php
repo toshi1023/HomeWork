@@ -74,13 +74,19 @@ class UserService implements UserInterface
     /* ユーザのDB保存処理
      * 第1引数:入力フォームから送信されたデータ
      * 第2引数:ファイル名
-     * 第3引数:updateフラグ(trueの場合はデータ更新の専用処理を実行)
+     * 第3引数:更新対象データ(新規保存の場合はnull)
     */
-    public function save($request, $filename=null, $update=false)
+    public function save($request, $filename=null, $user_data=null)
     {
         try{
+
+            // アップデートフラグがtrueの場合はユーザ情報を取得
+            if (!empty($user_data)) {
+                $this->user = $this->user::find($user_data->id);
+            }
+
             // ファイル名がnullの場合は画像の保存処理を実行しない
-            if (($filename) !== null) {
+            if ($filename !== null) {
                 
                 // 削除フラグがfalseの場合にアップロードした画像をDBに保存
                 if($request->img_delete == 1){
@@ -92,7 +98,7 @@ class UserService implements UserInterface
                 // ファイルアップロード処理
                 $this->fileUpload($request, $filename);
             }
-            
+
             // データの登録(画像以外)
             $this->user->last_name  = $request->last_name;
             $this->user->first_name = $request->first_name;
@@ -100,8 +106,8 @@ class UserService implements UserInterface
             $this->user->company_id = $request->company_id;
             $this->user->memo       = $request->memo;
 
-            // updateフラグがtrueの場合は新しいパスワードの入力がない限り保存しない
-            if($update){
+            // データ更新の場合は新しいパスワードの入力がない限り保存しない
+            if(!empty($user_data)){
                 if(($request->password) != null) {
                     $this->user->password   = Hash::make($request->password);
                 }
@@ -128,8 +134,9 @@ class UserService implements UserInterface
     public function destroy($request)
     {
         try{
-            // 対象データを取得
-            $user = $this->query->where('id', $request->id);
+            
+            // 変更対象ユーザを取得
+            $user = $this->user::find($request->id);
 
             // 論理削除フラグをtrueに変更
             $user->del_flg = 1;
@@ -137,6 +144,7 @@ class UserService implements UserInterface
             $user->save();
 
             return true;
+
         } catch (\Exception $e) {
             \Log::error('database delete error:'.$e->getMessage());
             return false;
