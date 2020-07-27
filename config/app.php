@@ -176,8 +176,10 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        // 以下、自作プロバイダ
         App\Providers\CompanyServiceProvider::class,
         App\Providers\UserServiceProvider::class,
+        App\Providers\CsvServiceProvider::class,
     ],
 
     /*
