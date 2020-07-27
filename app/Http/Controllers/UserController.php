@@ -7,7 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\MessageBag;
 use App\Models\User;
 use App\Models\Company;
@@ -104,10 +103,11 @@ class UserController extends Controller
 
 
     // マイページアクション
-    public function show(User $user)
+    public function show($id)
     {
-        // ユーザの所属する会社データを取得
+        // ログインユーザの所属する会社データとユーザデータを取得
         $company = $this->companies->showQuery()->first();
+        $user = $this->users->showQuery()->first();
         
         return view('users.show', [
             'user'    => $user,
@@ -117,11 +117,11 @@ class UserController extends Controller
 
 
     // 編集アクション
-    public function edit(User $user)
+    public function edit($id)
     {
 
         // 選択されたユーザの情報と会社情報を取得
-        $user = $this->users->editQuery($user)->first();
+        $user = $this->users->editQuery($id)->first();
         $companies = $this->companies->allQuery()->get();
 
         return view('users.edit', [
@@ -132,10 +132,10 @@ class UserController extends Controller
 
 
     /* 編集データの更新アクション */
-    public function update(Request $request, User $user)
+    public function update(Request $request, $id)
     {
         // 編集対象のユーザのデータを取得
-        $user = $this->users->editQuery($user)->first();
+        $user = $this->users->editQuery($id)->first();
 
         // メールアドレスの一意チェック(自分以外のデータと比較するように設定)
         $request->validate([
@@ -179,12 +179,12 @@ class UserController extends Controller
 
 
     // データの削除アクション
-    public function destroy(User $user)
+    public function destroy($id)
     {
         // dd($user);
         // exit;
         // 削除フラグをtrueに変更
-        if ($this->users->destroy($user)) {
+        if ($this->users->destroy($id)) {
             return redirect()->route('users.index')->with('message', 'ユーザを削除しました');
         }
 

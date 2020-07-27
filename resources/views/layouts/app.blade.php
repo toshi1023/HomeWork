@@ -96,6 +96,12 @@
                                 </ul> --}}
                                 <a href="{{ route('users.show', ['user' => Auth::user()->id]) }}">マイページ</a>
                             </li>
+                            <li>
+                                <a href="{{ route('companies.index') }}">カンパニー</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('users.index') }}">ユーザ</a>
+                            </li>
                         </ul>
                         <!-- Right Side Of Navbar -->
                         <ul class="nav navbar-nav navbar-right">
@@ -213,6 +219,11 @@
                 <li class="">
                 <a href="{{ route('home') }}">
                     <i class="fa fa-home"></i><span class="link-title">&nbsp;Home</span>
+                </a>
+                </li>
+                <li class="">
+                <a href="{{ route('companies.index') }}">
+                    <i class="far fa-building"></i><span class="link-title">&nbsp;会社一覧</span>
                 </a>
                 </li>
                 <li class="">

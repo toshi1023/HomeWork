@@ -48,7 +48,7 @@ class UserService implements UserInterface
      /* 編集対象となるユーザの情報を取得 */
      public function editQuery($request)
      {
-         $this->query->where('id', $request->id);
+         $this->query->where('id', $request);
  
          return $this->query;
      }
@@ -136,7 +136,7 @@ class UserService implements UserInterface
         try{
             
             // 変更対象ユーザを取得
-            $user = $this->user::find($request->id);
+            $user = $this->user::find($request);
 
             // 論理削除フラグをtrueに変更
             $user->del_flg = 1;
