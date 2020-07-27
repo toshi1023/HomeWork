@@ -17,7 +17,7 @@ class CompanyTableSeeder extends Seeder
         // faker使う(引数には日本語を設定している)
         $faker = Faker\Factory::create('ja_JP');
 
-        $company_name = array();
+        $company_name = [];
 
         // a~zまでの4文字をランダムに組み合わせて会社名を作成
         for($j=0; $j < 10; $j++){
@@ -27,7 +27,7 @@ class CompanyTableSeeder extends Seeder
 
         // レコード10社分出力
         for($i=0; $i < 10; $i++){
-            \App\Company::create([
+            \App\Models\Company::create([
                 'name' => $faker->randomElement($company_name), // 配列の値をランダムに配布
                 'address' => $faker->address(),
                 'tel' => $faker->phoneNumber(),

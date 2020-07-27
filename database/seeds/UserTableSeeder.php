@@ -19,7 +19,7 @@ class UserTableSeeder extends Seeder
 
         // レコード20人分出力
         for($i=0; $i < 20; $i++){
-            \App\User::create([
+            \App\Models\User::create([
                 'email' => $faker->email(),
                 'password' => Hash::make("aaaabbbb"),
                 'first_name' => $faker->firstName(),
