@@ -5,7 +5,7 @@
     会社一覧
         <div class="form-inline">
             {{-- csvエクスポート・インポート処理 --}}
-            <button class="btn btn-danger btn-import pull-right" data-import_url="">csvをインポート</button>
+            <button class="btn btn-danger btn-import pull-right" data-import_url2="{{ route('csv.import') }}">csvをインポート</button>
             
             <form action="{{ route('csv.export') }}" method="get">
                 <button type="submit" class="btn btn-primary btn-export pull-right">csvをエクスポート</button>

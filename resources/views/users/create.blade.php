@@ -22,38 +22,37 @@
             <label for="password">パスワード</label>
             <input type="password" id="password" name="password" class="form-control">
         </div>
-            <div class="col-md-6">
-                {{-- 画像削除時のメッセージ --}}
-                <div id="fade_msg" style="display: none; color: red">画像を削除しました</div>
+        <div class="col-md-6">
+            {{-- 画像削除時のメッセージ --}}
+            <div id="fade_msg" style="display: none; color: red">画像を削除しました</div>
 
-                <label for="profile_image">プロフィール画像</label>
-                {{-- @1 ドラッグアンドドロップデザイン --}}
-                <div class="user-icon-dnd-wrapper">
-                    <input type="file" id="profile_image" name="profile_image" class="form-control-file">
-                    <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
-                    <div id="drop_area" class="drop_area"></div>
-                </div>
-                {{-- @1 --}}
-                <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">
-                <input type="hidden" id="img_delete" name="img_delete" value=0>
-                <br>
-                <label for="company_id">会社名</label>
-                <select name="company_id" id="company_id" class="form-control">
-                    <option value="" selected>選択してください</option>
-                    @foreach($companies as $company)
-                        <option value="{{ $company->id }}">{{ $company->name }}</option>
-                    @endforeach
-                </select>
-
-                <label for="memo">備考</label>
-                <input type="text" name="memo" class="form-control">
-                <br>
-                <br>
-                <div class="form-group">
-                    <input type="button" class="btn btn-primary" value="登録する" id="btn_register"/>
-                </div>
+            <label for="profile_image">プロフィール画像</label>
+            {{-- @1 ドラッグアンドドロップデザイン --}}
+            <div class="user-icon-dnd-wrapper">
+                <input type="file" id="profile_image" name="profile_image" class="form-control-file">
+                <div class="preview"><img src="{{ asset('storage/images/noImage/Noimage_image.png') }}" width="350" height="250"></div>
+                <div id="drop_area" class="drop_area"></div>
             </div>
-        </form>
+            {{-- @1 --}}
+            <input type="button" id="cancell" class="btn btn-danger" value="画像を消去">
+            <input type="hidden" id="img_delete" name="img_delete" value=0>
+            <br>
+            <label for="company_id">会社名</label>
+            <select name="company_id" id="company_id" class="form-control">
+                <option value="" selected>選択してください</option>
+                @foreach($companies as $company)
+                    <option value="{{ $company->id }}">{{ $company->name }}</option>
+                @endforeach
+            </select>
+
+            <label for="memo">備考</label>
+            <input type="text" name="memo" class="form-control">
+            <br>
+            <div class="form-group">
+                <input type="button" class="btn btn-primary" value="登録する" id="btn_register"/>
+            </div>
+        </div>
+    </form>
 </div>
 @endsection
 

@@ -153,8 +153,17 @@ $(function(){
     // #2 csvインポート用のモーダルに関する設定
     $('.btn-import').on('click', function(){
         // importアクションへsubmitするURLを取得
-        var import_url = $(this).data('import_url');
 
+        var import_url;
+
+        // 現在のURLによってインポート先を判別
+        if (window.location.pathname === "/users") {
+            import_url = $(this).data('import_url');
+        }
+        if (window.location.pathname === "/companies") {
+            import_url = $(this).data('import_url2');
+        }
+        
         $('#csvForm').modal('show');
 
         // importアクションのURLをモーダル側のフォームにセット
@@ -163,3 +172,19 @@ $(function(){
     // #2
 });
 // @3
+
+/* ZipCloudの利用(郵便番号の自動検索・入力機能) */
+var getAddName = function( $addNum ){
+	var _zipcloudAPI = document.body.appendChild(document.createElement("script"));
+		_zipcloudAPI.src = "http://zipcloud.ibsnet.co.jp/api/search?zipcode=" + $addNum + "&callback=getAddNameByZipcloudAPI";
+	document.body.removeChild(_zipcloudAPI);
+};
+var getAddNameByZipcloudAPI = function( $getAdd ){
+	var _addFormatted  = "";
+	if($getAdd.status == 200){
+			_addFormatted += $getAdd.results[0].address1; // 都道府県名
+			_addFormatted += $getAdd.results[0].address2; // 市町村名
+			_addFormatted += $getAdd.results[0].address3; // 町域名
+	}
+	document.getElementById("address").value = _addFormatted;
+};

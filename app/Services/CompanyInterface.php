@@ -9,4 +9,7 @@ interface CompanyInterface
 
     // showページ用のデータ取得メソッド
     public function showQuery();
+
+    // editページ用のデータ取得メソッド
+    public function editQuery($request);
 }

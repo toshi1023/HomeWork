@@ -227,6 +227,11 @@
                 </a>
                 </li>
                 <li class="">
+                <a href="{{ route('companies.create') }}">
+                    <i class="fas fa-edit"></i><span class="link-title">&nbsp;会社登録</span>
+                </a>
+                </li>
+                <li class="">
                 <a href="{{ route('users.index') }}">
                     <i class="fas fa-users"></i><span class="link-title">&nbsp;ユーザ一覧</span>
                 </a>
